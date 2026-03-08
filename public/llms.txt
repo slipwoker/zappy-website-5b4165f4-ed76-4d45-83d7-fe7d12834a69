@@ -1,0 +1,47 @@
+# Business — Generative Engine Optimization Map
+
+---
+
+## Pages
+
+### בית
+https://example.com
+גלה בלוג ספורט ישראלי מוביל עם כתבות ספורט עדכניות, ניתוחים מעמיקים וסיקור מקצועי. הצטרף לקהילת חובבי הספורט שקוראים את הכתבות של נדב!
+
+### מאמרים
+https://example.com/articles
+עיין בארכיון המלא של כתבות ספורט ישראלי, ניתוחים טקטיים ודעות חדות. מאמרים חדשים מתעדכנים באתר מדי יום - קרא עכשיו ותישאר מעודכן!
+
+### מאמר
+https://example.com/articles/sample-article
+כתבת ספורט מעמיקה עם ניתוח מקצועי, עובדות מרתקות ודעות נועזות. חווית קריאה ייחודית לחובבי ספורט אמיתיים - היכנס וקרא את המאמר המלא!
+
+### צור קשר
+https://example.com/contact
+רוצה לשתף פעולה, להציע נושא לכתבה או סתם לדבר ספורט? צור קשר ישיר עם נדב ונחזור אליך בהקדם. נשמח לשמוע ממך ולהתחבר לעולם הספורט!
+
+## Legal & Policy
+
+### Privacy Policy
+https://example.com/privacy
+Information about how user data is collected, stored, and protected.
+
+### Terms & Conditions
+https://example.com/terms
+Legal terms describing service usage, rights, and policies.
+
+### Accessibility Statement
+https://example.com/accessibility
+Information about WCAG compliance and accessibility features.
+
+---
+
+# Business Context (for LLM understanding)
+
+## About Business
+---
+
+# Additional Resources
+
+- **Sitemap**: https://example.com/sitemap.xml
+- **Robots.txt**: https://example.com/robots.txt

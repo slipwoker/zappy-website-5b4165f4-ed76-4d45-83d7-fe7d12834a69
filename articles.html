@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <title>כל המאמרים והכתבות על ספורט ישראלי — הכתבות של נדב</title>
+    <meta name="description" content="עיין בארכיון המלא של כתבות ספורט ישראלי, ניתוחים טקטיים ודעות חדות. מאמרים חדשים מתעדכנים באתר מדי יום - קרא עכשיו ותישאר מעודכן!">
+    <meta name="keywords" content="כתבות ספורט ישראלי עדכניות, מאמרי ספורט, ארכיון כתבות ספורט, ניתוחי ספורט, בלוג ספורט">
+    
+    <!-- Zappy Analytics -->
+<script>
+(function() {
+  'use strict';
+  
+  // Configuration
+  var config = {
+    websiteId: '5b4165f4-ed76-4d45-83d7-fe7d12834a69',
+    apiUrl: 'https://api.zappy5.com/api/analytics/track',
+    sessionDuration: 30 * 60 * 1000, // 30 minutes
+    visitorDuration: 30 * 24 * 60 * 60 * 1000, // 30 days
+    trackPageViews: true,
+    trackClicks: true,
+    trackFormSubmissions: true
+  };
+  
+  // Generate or retrieve persistent visitor ID (30 days)
+  function getVisitorId() {
+    var visitorKey = 'zappy_visitor_' + config.websiteId;
+    var visitor = null;
+    
+    try {
+      visitor = localStorage.getItem(visitorKey);
+      if (visitor) {
+        var visitorData = JSON.parse(visitor);
+        var now = Date.now();
+        
+        // Check if visitor ID is still valid (30 days)
+        if (now - visitorData.created < config.visitorDuration) {
+          // Update last seen timestamp
+          visitorData.lastSeen = now;
+          localStorage.setItem(visitorKey, JSON.stringify(visitorData));
+          return visitorData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: LocalStorage not available');
+    }
+    
+    // Generate new visitor ID
+    var newVisitorId = 'zv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      localStorage.setItem(visitorKey, JSON.stringify({
+        id: newVisitorId,
+        created: Date.now(),
+        lastSeen: Date.now()
+      }));
+    } catch (e) {
+      // Continue without local storage
+    }
+    
+    return newVisitorId;
+  }
+  
+  // Generate or retrieve session ID (30 minutes)
+  function getSessionId() {
+    var sessionKey = 'zappy_session_' + config.websiteId;
+    var session = null;
+    
+    try {
+      session = sessionStorage.getItem(sessionKey);
+      if (session) {
+        var sessionData = JSON.parse(session);
+        var now = Date.now();
+        
+        // Check if session is still valid
+        if (now - sessionData.timestamp < config.sessionDuration) {
+          // Update timestamp
+          sessionData.timestamp = now;
+          sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
+          return sessionData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: SessionStorage not available');
+    }
+    
+    // Generate new session ID
+    var newSessionId = 'zs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      sessionStorage.setItem(sessionKey, JSON.stringify({
+        id: newSessionId,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      // Continue without session storage
+    }
+    
+    return newSessionId;
+  }
+  
+  var visitorId = getVisitorId();
+  var sessionId = getSessionId();
+  
+  // Track an event
+  function trackEvent(eventType, data) {
+    data = data || {};
+    
+    var eventData = {
+      website_id: config.websiteId,
+      event_type: eventType,
+      page_path: window.location.pathname,
+      referrer: document.referrer || 'direct',
+      visitor_id: visitorId,
+      session_id: sessionId,
+      metadata: data
+    };
+    
+    // Use sendBeacon if available (better for page unload events)
+    if (navigator.sendBeacon) {
+      var blob = new Blob([JSON.stringify(eventData)], { type: 'application/json' });
+      navigator.sendBeacon(config.apiUrl, blob);
+    } else {
+      // Fallback to fetch
+      fetch(config.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData),
+        keepalive: true
+      }).catch(function(error) {
+        console.warn('Zappy Analytics: Failed to track event', error);
+      });
+    }
+  }
+  
+  // Track page view
+  if (config.trackPageViews) {
+    trackEvent('pageview', {
+      title: document.title,
+      url: window.location.href
+    });
+  }
+  
+  // Track clicks on important elements
+  if (config.trackClicks) {
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      
+      // Track button clicks (counted as actions)
+      if (target.tagName === 'BUTTON' || target.closest('button')) {
+        var button = target.tagName === 'BUTTON' ? target : target.closest('button');
+        trackEvent('click', {
+          element: 'button',
+          text: button.textContent.trim().substring(0, 100),
+          id: button.id || null,
+          class: button.className || null
+        });
+      }
+      
+      // Track link clicks (navigation - not counted as actions)
+      else if (target.tagName === 'A' || target.closest('a')) {
+        var link = target.tagName === 'A' ? target : target.closest('a');
+        trackEvent('navigation', {
+          element: 'link',
+          text: link.textContent.trim().substring(0, 100),
+          href: link.href,
+          external: link.hostname !== window.location.hostname
+        });
+      }
+    }, true);
+  }
+  
+  // Track form submissions
+  if (config.trackFormSubmissions) {
+    document.addEventListener('submit', function(e) {
+      var form = e.target;
+      
+      trackEvent('form_submit', {
+        form_id: form.id || null,
+        form_name: form.name || null,
+        form_action: form.action || null,
+        form_method: form.method || 'GET'
+      });
+    }, true);
+  }
+  
+  // Track time on page (send on page unload)
+  var pageLoadTime = Date.now();
+  
+  window.addEventListener('beforeunload', function() {
+    var timeOnPage = Math.floor((Date.now() - pageLoadTime) / 1000); // in seconds
+    
+    trackEvent('page_unload', {
+      time_on_page: timeOnPage,
+      page_path: window.location.pathname
+    });
+  });
+  
+  // Expose tracking function globally for custom events
+  window.zappyAnalytics = {
+    track: trackEvent,
+    getVisitorId: function() { return visitorId; },
+    getSessionId: function() { return sessionId; }
+  };
+  
+})();
+</script>
+<!-- End Zappy Analytics -->
+    <meta property="og:title" content="כל המאמרים והכתבות על ספורט ישראלי — הכתבות של נדב">
+  <meta property="og:description" content="עיין בארכיון המלא של כתבות ספורט ישראלי, ניתוחים טקטיים ודעות חדות. מאמרים חדשים מתעדכנים באתר מדי יום - קרא עכשיו ותישאר מעודכן!">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="he_IL">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="כל המאמרים והכתבות על ספורט ישראלי — הכתבות של נדב">
+  <meta name="twitter:description" content="עיין בארכיון המלא של כתבות ספורט ישראלי, ניתוחים טקטיים ודעות חדות. מאמרים חדשים מתעדכנים באתר מדי יום - קרא עכשיו ותישאר מעודכן!">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-512x512.png">
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+    <!-- Cookie Consent -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.umd.js"></script>
+    <!-- Mickidum Accessibility Toolbar -->
+    <script src="https://cdn.jsdelivr.net/gh/mickidum/acc_toolbar/acctoolbar/acctoolbar.min.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+
+    <style id="zappy-dropdown-submenu-styles">
+      /* ========== DESKTOP DROPDOWN SUBMENU STYLES ========== */
+      /* Base styles for dropdown submenus - parent must be positioned */
+      .nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu) { position: relative; }
+      /* Submenu base - hidden by default */
+      .nav-menu .sub-menu, nav .sub-menu, .navbar .sub-menu, #navMenu .sub-menu { display: block !important; position: absolute !important; top: 100%; left: 0; min-width: 220px; background: white; border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); padding: 8px 0; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 1000; list-style: none; pointer-events: none; }
+      /* CRITICAL: Desktop hover styles to show dropdown */
+      .nav-menu li:hover > .sub-menu, nav li:hover > .sub-menu, .navbar li:hover > .sub-menu, #navMenu li:hover > .sub-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; pointer-events: auto !important; }
+      /* Submenu item styling */
+      .sub-menu li { list-style: none; margin: 0; padding: 0; }
+      .sub-menu a { display: block !important; padding: 10px 16px !important; color: #333 !important; font-weight: 500; text-decoration: none; white-space: nowrap; transition: background-color 0.2s; }
+      .sub-menu a:hover { background-color: #f5f5f5; }
+      /* RTL (Hebrew/Arabic) dropdown positioning */
+      [dir="rtl"] .nav-menu .sub-menu, [dir="rtl"] nav .sub-menu, [dir="rtl"] .navbar .sub-menu, html[lang="he"] .nav-menu .sub-menu, html[lang="he"] nav .sub-menu, html[lang="he"] .navbar .sub-menu, html[lang="ar"] .nav-menu .sub-menu, html[lang="ar"] nav .sub-menu, html[lang="ar"] .navbar .sub-menu { left: auto !important; right: 0 !important; }
+      /* Hide empty dropdown menus */
+      .sub-menu:empty, .sub-menu:not(:has(li:not(.zappy-hidden-menu-item))), .sub-menu:not(:has(li)) { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+      /* Desktop: show submenu on Menu Group hover */
+      li:has(.menu-group-title):hover > .sub-menu { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; pointer-events: auto !important; }
+      /* Menu Group title styling */
+      .nav-menu > li > .menu-group-title, #navMenu > li > .menu-group-title { display: inline-block; padding: 0.5rem 1rem; cursor: default; user-select: none; }
+      
+      /* ========== MOBILE SUBMENU STYLES ========== */
+      @media (max-width: 768px) {
+        .nav-menu .sub-menu, nav .sub-menu, .navbar .sub-menu, #navMenu .sub-menu { position: static !important; transform: none !important; box-shadow: none !important; background: transparent !important; max-height: 0; overflow: hidden; opacity: 0; visibility: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; padding: 0 !important; border-radius: 0 !important; }
+        .sub-menu.mobile-expanded { max-height: 500px !important; opacity: 1 !important; visibility: visible !important; padding: 8px 0 8px 16px !important; }
+        [dir="rtl"] .sub-menu.mobile-expanded, html[lang="he"] .sub-menu.mobile-expanded { padding: 8px 16px 8px 0 !important; }
+        /* Disable hover behavior on mobile */
+        .nav-menu li:hover > .sub-menu, nav li:hover > .sub-menu, .navbar li:hover > .sub-menu, #navMenu li:hover > .sub-menu { opacity: 0; visibility: hidden; pointer-events: none; }
+        .nav-menu li > .sub-menu.mobile-expanded, nav li > .sub-menu.mobile-expanded, .navbar li > .sub-menu.mobile-expanded, #navMenu li > .sub-menu.mobile-expanded { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+        .nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; position: relative !important; min-height: 44px !important; }
+        .nav-menu li:has(.sub-menu) > a, nav li:has(.sub-menu) > a, .navbar li:has(.sub-menu) > a, #navMenu li:has(.sub-menu) > a { flex: 1 !important; min-width: 0 !important; }
+        .nav-menu li:has(.sub-menu) > .menu-group-title, nav li:has(.sub-menu) > .menu-group-title, .navbar li:has(.sub-menu) > .menu-group-title, #navMenu li:has(.sub-menu) > .menu-group-title { flex: 1 !important; min-width: 0 !important; padding: 0 !important; line-height: inherit !important; }
+        .nav-menu li:has(.sub-menu) > .sub-menu, nav li:has(.sub-menu) > .sub-menu, .navbar li:has(.sub-menu) > .sub-menu, #navMenu li:has(.sub-menu) > .sub-menu { flex-basis: 100% !important; width: 100% !important; }
+        .nav-menu li:has(.sub-menu) > a [class*="chevron"], .nav-menu li:has(.sub-menu) > a [class*="arrow"], .nav-menu li:has(.sub-menu) > a .fa-chevron-down, .nav-menu li:has(.sub-menu) > a .fa-angle-down, nav li:has(.sub-menu) > a [class*="chevron"], nav li:has(.sub-menu) > a [class*="arrow"], #navMenu li:has(.sub-menu) > a [class*="chevron"], #navMenu li:has(.sub-menu) > a [class*="arrow"] { display: none !important; visibility: hidden !important; }
+        .mobile-submenu-toggle { display: flex !important; align-items: center !important; justify-content: center !important; width: 44px !important; height: auto !important; background: transparent !important; border: none !important; cursor: pointer !important; color: var(--text-dark) !important; position: static !important; flex-shrink: 0 !important; align-self: stretch !important; z-index: 2 !important; padding: 0 !important; margin: 0 !important; }
+        .mobile-submenu-toggle::after { content: '' !important; width: 0 !important; height: 0 !important; border-left: 6px solid transparent !important; border-right: 6px solid transparent !important; border-top: 7px solid currentColor !important; transition: transform 0.3s ease !important; }
+        .mobile-submenu-toggle.expanded::after { transform: rotate(180deg) !important; }
+        .sub-menu a { padding: 10px 0 !important; display: block !important; color: var(--text-dark) !important; }
+        .navbar .sub-menu li a, nav.navbar .sub-menu li a, .zappy-products-dropdown .sub-menu a { color: var(--text-dark) !important; }
+      }
+      @media (min-width: 769px) { .mobile-submenu-toggle { display: none !important; } }
+    </style>
+
+    <style id="zappy-widget-visibility">
+      #mic-access-tool-general-button, .mic-access-tool-general-button,
+      #mic-init-access-tool .mic-access-tool-general-button, #mic-init-access-tool #mic-access-tool-general-button,
+      ._access-icon, #mic-access-tool-box, .mic-access-tool-box,
+      #mic-init-access-tool #mic-access-tool-box, div[id*="mic-access-tool-box"], ._access-menu {
+        display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;
+      }
+    </style>
+</head>
+<body>
+
+  <nav class="navbar" dir="rtl">
+  <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+    <svg class="hamburger-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+    <svg class="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:none;">
+      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+    </svg>
+  </button>
+  
+  <button class="phone-header-btn" aria-label="Call">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+    </svg>
+  </button>
+  
+  <div class="nav-container">
+    <div class="nav-brand">
+      <a href="/" class="logo-link">
+        <img src="/assets/business-logo.webp" alt="הכתבות של נדב" class="logo" />
+      </a>
+    </div>
+    
+    <ul class="nav-menu" id="navMenu"><li><a href="/articles">מאמרים</a></li><li><a href="/articles/sample-article">מאמר</a></li></ul>
+    
+    <div class="nav-cta-container">
+      <a href="/contact" class="nav-cta-btn">צור קשר</a>
+    </div>
+  </div>
+</nav>
+  
+  <main>
+    <section class="articles-masthead-section" data-layout-spec="מאמרים-masthead">
+  <div class="articles-masthead-container">
+    <div class="articles-masthead-content">
+      <h1>מאמרים</h1>
+      <p>כל הכתיבה במקום אחד — ניתוחים מעמיקים, הערות שוטפות ותצפיות מיום המשחק.</p>
+      <div class="articles-masthead-divider"></div>
+      <div class="articles-masthead-topics">
+        <a href="#" class="topic-chip">אחרונות</a>
+        <a href="#" class="topic-chip">שוברות</a>
+        <a href="#" class="topic-chip">ניתוח</a>
+        <a href="#" class="topic-chip">דעה</a>
+        <a href="#" class="topic-chip">טקטיקה</a>
+        <a href="#" class="topic-chip">העברות</a>
+        <a href="#" class="topic-chip">אנליטיקה</a>
+        <a href="#" class="topic-chip">ראיונות</a>
+      </div>
+    </div>
+  </div>
+  <div class="articles-masthead-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,60 L0,40 L400,40 L400,25 L800,25 L800,10 L1200,10 L1200,60 Z" fill="var(--bg-light)"></path>
+    </svg>
+  </div>
+</section>
+
+<section class="articles-taxonomy-section" data-layout-spec="מאמרים-taxonomy">
+  <div class="articles-taxonomy-container">
+    <aside class="articles-taxonomy-sidebar">
+      <div class="articles-taxonomy-group">
+        <h2>ענפי ספורט</h2>
+        <nav class="articles-taxonomy-links" aria-label="קטגוריות ענפי ספורט">
+          <a href="#" class="articles-taxonomy-link">כדורגל</a>
+          <a href="#" class="articles-taxonomy-link">כדורסל</a>
+          <a href="#" class="articles-taxonomy-link">טניס</a>
+          <a href="#" class="articles-taxonomy-link">אתלטיקה</a>
+          <a href="#" class="articles-taxonomy-link">שחייה</a>
+          <a href="#" class="articles-taxonomy-link">אומנויות לחימה</a>
+        </nav>
+      </div>
+      <div class="articles-taxonomy-separator"></div>
+      <div class="articles-taxonomy-group">
+        <h2>ליגות ותחרויות</h2>
+        <nav class="articles-taxonomy-links" aria-label="קטגוריות ליגות">
+          <a href="#" class="articles-taxonomy-link">ליגת העל</a>
+          <a href="#" class="articles-taxonomy-link">ליגת האלופות</a>
+          <a href="#" class="articles-taxonomy-link">NBA</a>
+          <a href="#" class="articles-taxonomy-link">יורוליג</a>
+          <a href="#" class="articles-taxonomy-link">אליפות העולם</a>
+          <a href="#" class="articles-taxonomy-link">אולימפיאדה</a>
+        </nav>
+      </div>
+      <div class="articles-taxonomy-separator"></div>
+      <div class="articles-taxonomy-group">
+        <h2>תגיות נפוצות</h2>
+        <nav class="articles-taxonomy-links" aria-label="תגיות נפוצות">
+          <a href="#" class="articles-taxonomy-link">ניתוח טקטי</a>
+          <a href="#" class="articles-taxonomy-link">ראיונות</a>
+          <a href="#" class="articles-taxonomy-link">סטטיסטיקה</a>
+          <a href="#" class="articles-taxonomy-link">שחקנים בולטים</a>
+          <a href="#" class="articles-taxonomy-link">היסטוריה</a>
+          <a href="#" class="articles-taxonomy-link">חדשות עדכניות</a>
+        </nav>
+      </div>
+    </aside>
+    <div class="articles-taxonomy-main">
+      <div class="articles-taxonomy-grid">
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-1" data-context="Professional soccer match action shot showing intense gameplay moment, dramatic lighting, stadium atmosphere, Israeli football league, dynamic sports photography" width="600" height="338" src="/assets/site-articles-taxonomy-image-1.webp" alt="תמונת כתבה - רגע מרגש במשחק כדורגל">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>הניתוח המלא: איך הפועל ת"א הפכה את המשחק בעשר דקות</h3>
+            <p>בחינה מעמיקה של המהלכים הטקטיים שהובילו למהפך הדרמטי במחצית השנייה. הקבוצה עברה מ-0-2 לניצחון 3-2 בזכות החלפות נבונות ושינוי מערך.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 8 דקות • כדורגל</small></p>
+          </div>
+        </article>
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-2" data-context="Basketball player making spectacular dunk, indoor arena lighting, professional basketball court, energetic crowd atmosphere, Israeli basketball league" width="600" height="338" src="/assets/site-articles-taxonomy-image-2.webp" alt="תמונת כתבה - טבילה מרהיבה בכדורסל">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>מכבי ת"א: העונה שמשנה את כללי המשחק</h3>
+            <p>סקירה מקיפה של עונת הפלאים של מכבי תל אביב ביורוליג. הקבוצה מציגה רמה חסרת תקדים עם סדרת ניצחונות מרשימה מול יריבות אירופאיות.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 6 דקות • כדורסל</small></p>
+          </div>
+        </article>
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-3" data-context="Tennis player serving with intense concentration, outdoor clay court, professional tennis tournament atmosphere, dynamic sports moment" width="600" height="338" src="/assets/site-articles-taxonomy-image-3.webp" alt="תמונת כתבה - רגע מכריע במשחק טניס">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>ראיון בלעדי: אלוף הטניס הישראלי על הדרך לצמרת</h3>
+            <p>שיחה גלויה וכנה עם השחקן המוביל על האתגרים, ההצלחות והמסע המרתק בדרך למקום בעשירייה הראשונה בעולם.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 10 דקות • טניס</small></p>
+          </div>
+        </article>
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-4" data-context="Olympic athlete running track race, stadium atmosphere with dramatic lighting, athletic competition intensity, professional sports photography" width="600" height="338" src="/assets/site-articles-taxonomy-image-4.webp" alt="תמונת כתבה - רגע מכריע במרוץ אתלטיקה">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>הדרך לפריז 2024: המתכונת המנצחת של נבחרת האתלטיקה</h3>
+            <p>מבט מאחורי הקלעים על תכנית האימונים והאסטרטגיה שמכינה את הספורטאים הישראלים לקראת האולימפיאדה הקרובה.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 7 דקות • אתלטיקה</small></p>
+          </div>
+        </article>
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-5" data-context="Professional swimmer in action during competition, underwater photography angle, Olympic pool setting, athletic determination and power" width="600" height="338" src="/assets/site-articles-taxonomy-image-5.webp" alt="תמונת כתבה - שחיין במהלך תחרות">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>שיא ישראלי חדש: הסיפור מאחורי הזמן המדהים</h3>
+            <p>כתבת עומק על השחיין שהרס את השיא הישראלי ב-200 מטר חופשי. מה עומד מאחורי ההישג ההיסטורי ומה הצעדים הבאים.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 5 דקות • שחייה</small></p>
+          </div>
+        </article>
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-6" data-context="Martial arts competition moment, intense fighting action, professional MMA or judo match, athletic combat sports atmosphere" width="600" height="338" src="/assets/site-articles-taxonomy-image-6.webp" alt="תמונת כתבה - רגע מכריע באומנויות לחימה">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>עליית אומנויות הלחימה בישראל: תופעה שהגיעה כדי להישאר</h3>
+            <p>ניתוח מקיף של הפופולריות הגואה של MMA וג'ודו בישראל, עם מבט על הספורטאים המובילים והשפעת התופעה על נוער.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 9 דקות • אומנויות לחימה</small></p>
+          </div>
+        </article>
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-7" data-context="Soccer tactical board with strategy diagrams, coaching analysis setup, professional sports tactics visualization, modern football analytics" width="600" height="338" src="/assets/site-articles-taxonomy-image-7.webp" alt="תמונת כתבה - ניתוח טקטי במשחק כדורגל">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>המהפכה הטקטית: איך הקבוצות הישראליות משתמשות בדאטה</h3>
+            <p>חקירה מעמיקה של השימוש בסטטיסטיקה מתקדמת ובינה מלאכותית בכדורגל הישראלי. הכלים החדשים שמשנים את פני המשחק.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 11 דקות • כדורגל</small></p>
+          </div>
+        </article>
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-8" data-context="Historic sports moment photograph, vintage black and white or sepia tone, legendary Israeli sports achievement, nostalgic athletic history" width="600" height="338" src="/assets/site-articles-taxonomy-image-8.webp" alt="תמונת כתבה - רגע היסטורי בספורט הישראלי">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>50 שנה לניצחון ההיסטורי: מבט לאחור על הרגע שעצר את המדינה</h3>
+            <p>סיפור מרתק על אחד הרגעים המכוננים בספורט הישראלי, עם עדויות של שחקנים ומאמנים שהיו שם באותו יום בלתי נשכח.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 12 דקות • היסטוריה</small></p>
+          </div>
+        </article>
+        <article class="articles-taxonomy-card">
+          <div class="articles-taxonomy-card-image">
+            <img data-placeholder="articles-taxonomy-image-9" data-context="Breaking sports news scene, press conference setting, journalists and cameras, urgent sports announcement atmosphere, modern media coverage" width="600" height="338" src="/assets/site-articles-taxonomy-image-9.webp" alt="תמונת כתבה - חדשות ספורט עדכניות">
+          </div>
+          <div class="articles-taxonomy-card-content">
+            <h3>עדכון אחרון: העברה מפתיעה שמזעזעת את הליגה</h3>
+            <p>פרטים חמים על העסקה הגדולה ביותר של העונה. השחקן הכוכב עובר לקבוצה יריבה בעסקת שיא שמשנה את מאזן הכוחות בליגה.</p>
+            <p class="articles-taxonomy-card-meta"><small>זמן קריאה: 4 דקות • חדשות עדכניות</small></p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+  <div class="articles-taxonomy-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="articles-taxonomy-fade" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:rgba(246,247,251,0);stop-opacity:1"></stop>
+          <stop offset="100%" style="stop-color:rgba(10,13,18,0.4);stop-opacity:1"></stop>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="1200" height="60" fill="url(#articles-taxonomy-fade)"></rect>
+    </svg>
+  </div>
+</section>
+
+<section class="articles-highlights-section" data-layout-spec="מאמרים-highlights">
+  <div class="articles-highlights-container">
+    <div class="articles-highlights-header">
+      <h2>בחירת העורך</h2>
+      <p class="articles-highlights-subtitle">שלוש כתבות שדורשות את תשומת הלב המלאה שלך.</p>
+    </div>
+
+    <div class="articles-highlights-grid">
+      <!-- Large Featured Card -->
+      <article class="highlight-card highlight-card-large">
+        <div class="highlight-card-image-wrapper">
+          <img data-placeholder="articles-highlights-image-1" data-context="Dynamic sports action shot: Israeli basketball player mid-dunk in dramatic lighting with crowd silhouettes in background, cinematic sports photography with film grain texture, high contrast and moody atmosphere" width="600" height="700" src="/assets/site-articles-highlights-image-1.webp" alt="כדורסל ישראלי - רגע מכריע במשחק">
+          <div class="highlight-card-overlay"></div>
+        </div>
+        <div class="highlight-card-content">
+          <h3>המהפכה בכדורסל הישראלי: כשהצעירים משתלטים על המגרש</h3>
+          <p>דור חדש של שחקנים מקומיים משנה את כללי המשחק בליגה. מניתוח מעמיק של הסטטיסטיקות ועד לראיונות בלעדיים עם המאמנים - כל מה שצריך לדעת על העתיד של הכדורסל בישראל.</p>
+        </div>
+      </article>
+
+      <!-- Small Card 1 -->
+      <article class="highlight-card highlight-card-small">
+        <div class="highlight-card-image-wrapper">
+          <img data-placeholder="articles-highlights-image-2" data-context="Israeli soccer/football tactical analysis: overhead view of soccer field with tactical markings, players in formation, professional sports photography with cinematic color grading and subtle grain" width="400" height="300" src="/assets/site-articles-highlights-image-2.webp" alt="ניתוח טקטי - כדורגל ישראלי">
+          <div class="highlight-card-overlay"></div>
+        </div>
+        <div class="highlight-card-content">
+          <h3>הטקטיקה שמשנה הכל: מבט מעמיק על המהפכה האסטרטגית</h3>
+          <p>ניתוח מקצועי של השינויים הטקטיים שמובילים את הקבוצות המובילות בליגה. איך המאמנים משנים את פני המשחק הישראלי.</p>
+        </div>
+      </article>
+
+      <!-- Small Card 2 -->
+      <article class="highlight-card highlight-card-small">
+        <div class="highlight-card-image-wrapper">
+          <img data-placeholder="articles-highlights-image-3" data-context="Israeli athlete training: close-up of determined athlete in gym environment, dramatic side lighting, sweat and intensity, cinematic sports documentary style with film grain" width="400" height="300" src="/assets/site-articles-highlights-image-3.webp" alt="אימון מקצועי - ספורטאי ישראלי">
+          <div class="highlight-card-overlay"></div>
+        </div>
+        <div class="highlight-card-content">
+          <h3>מאחורי הקלעים: שבוע באימונים של אלוף</h3>
+          <p>ליווי אישי של ספורטאי עילית ישראלי במהלך שבוע אימונים אינטנסיבי. מה באמת נדרש כדי להגיע לפסגה.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- Diagonal Neon Divider -->
+  <div class="articles-highlights-divider-wrapper">
+    <svg data-no-icon-edit="true" aria-hidden="true" viewBox="0 0 1200 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#20D4D6;stop-opacity:0.85"></stop>
+          <stop offset="50%" style="stop-color:#20D4D6;stop-opacity:0.65"></stop>
+          <stop offset="100%" style="stop-color:#20D4D6;stop-opacity:0.25"></stop>
+        </linearGradient>
+        <filter id="neonGlow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"></feGaussianBlur>
+          <feMerge>
+            <feMergeNode in="coloredBlur"></feMergeNode>
+            <feMergeNode in="SourceGraphic"></feMergeNode>
+          </feMerge>
+        </filter>
+      </defs>
+      <path d="M0,100 L0,65 L900,25 L900,22 L1200,15 L1200,100 Z" fill="var(--bg-light)"></path>
+      <path d="M0,65 L900,25" stroke="url(#neonGradient)" stroke-width="2" fill="var(--bg-light)" filter="url(#neonGlow)"></path>
+      <path d="M900,22 L1200,15" stroke="url(#neonGradient)" stroke-width="1.5" fill="var(--bg-light)" filter="url(#neonGlow)" opacity="0.6"></path>
+    </svg>
+  </div>
+</section>
+
+<section class="articles-cta-section" data-layout-spec="מאמרים-cta">
+  <div class="articles-cta-container">
+    <div class="articles-cta-rule"></div>
+    <div class="articles-cta-content">
+      <h2 class="articles-cta-heading">רוצה נושא ספציפי מכוסה?</h2>
+      <p class="articles-cta-text">שלח בקשה וכלול את המשחק, הליגה או הזווית שתרצה לראות מנותחת. אני תמיד מחפש רעיונות חדשים לכתבות.</p>
+      <a href="/contact" class="btn-primary articles-cta-btn">צור קשר</a>
+    </div>
+  </div>
+</section>
+  </main>
+  
+  <footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-top">
+      <div class="footer-column footer-about">
+        <img src="/assets/business-logo.webp" alt="הכתבות של נדב" class="logo" />
+        <p class="footer-description">תוכן ספורט איכותי ומעמיק מאת נדב - כתבות, ניתוחים ודעות מהשטח</p>
+      </div>
+      
+      <div class="footer-column footer-links">
+        <h3 class="footer-heading">קישורים מהירים</h3>
+        <ul class="footer-menu">
+          <li><a href="/articles">מאמרים</a></li>
+          <li><a href="/articles/sample-article">מאמר</a></li>
+          <li><a href="/contact">צור קשר</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column footer-contact">
+        <h3 class="footer-heading">יצירת קשר</h3>
+        <ul class="footer-contact-list">
+          <li>
+            <i class="fas fa-envelope"></i>
+            <a href="mailto:[business_email]">[business_email]</a>
+          </li>
+          <li>
+            <i class="fas fa-phone"></i>
+            <a href="tel:[business_phone]">[business_phone]</a>
+          </li>
+          <li><a href="/"><i class="fas fa-map-marker-alt"></i>
+            <span>[business_address]</span></a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column footer-social">
+        <h3 class="footer-heading">עקבו אחרינו</h3>
+        <div class="social-links">
+          <a href="[facebook_handle]" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="[instagram_handle]" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="[whatsapp_handle]" aria-label="WhatsApp" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-whatsapp"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="footer-bottom-content">
+        <p class="copyright">© 2026 הכתבות של נדב. כל הזכויות שמורות.</p>
+        <div class="footer-bottom-links">
+          <a href="/privacy">מדיניות פרטיות</a>
+          <span class="separator">|</span>
+          <a href="/terms">תנאי שימוש</a>
+          <span class="separator">|</span>
+          <a href="/accessibility">נגישות</a>
+          <span class="separator">|</span>
+          <a href="https://zappy5.com" target="_blank" class="zappy-attribution" rel="noopener noreferrer">נוצר באמצעות Zappy</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+  
+  <a href="https://wa.me/[whatsapp_handle]" class="whatsapp-float" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+  
+  <div data-integration="accessibility:toolbar"></div>
+
+    <script src="/script.js"></script>
+
+    <script id="zappy-mobile-submenu-script">
+    (function() {
+      function initMobileSubmenuToggles() {
+        if (window.innerWidth > 768) {
+          document.querySelectorAll('.mobile-submenu-toggle').forEach(function(btn) { btn.remove(); });
+          document.querySelectorAll('.sub-menu.mobile-expanded').forEach(function(menu) { menu.classList.remove('mobile-expanded'); });
+          return;
+        }
+        var items = document.querySelectorAll('.nav-menu li:has(.sub-menu), nav li:has(.sub-menu), .navbar li:has(.sub-menu), #navMenu li:has(.sub-menu)');
+        items.forEach(function(li) {
+          if (li.querySelector('.mobile-submenu-toggle')) return;
+          var submenu = li.querySelector('.sub-menu');
+          var parentLink = li.querySelector(':scope > a');
+          if (!submenu || !parentLink) return;
+          var toggleBtn = document.createElement('button');
+          toggleBtn.className = 'mobile-submenu-toggle';
+          toggleBtn.setAttribute('aria-label', 'Toggle submenu');
+          toggleBtn.setAttribute('type', 'button');
+          parentLink.insertAdjacentElement('afterend', toggleBtn);
+          toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            document.querySelectorAll('.sub-menu.mobile-expanded').forEach(function(menu) {
+              if (menu !== submenu) { menu.classList.remove('mobile-expanded'); var t = menu.parentElement.querySelector('.mobile-submenu-toggle'); if(t) t.classList.remove('expanded'); }
+            });
+            submenu.classList.toggle('mobile-expanded');
+            toggleBtn.classList.toggle('expanded');
+          });
+        });
+      }
+      if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMobileSubmenuToggles); }
+      else { initMobileSubmenuToggles(); }
+      var resizeTimer; window.addEventListener('resize', function() { clearTimeout(resizeTimer); resizeTimer = setTimeout(initMobileSubmenuToggles, 250); });
+      // Re-initialize when mobile menu becomes visible (MutationObserver)
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes') {
+            var target = mutation.target;
+            if (target.classList && (target.classList.contains('active') || target.classList.contains('open'))) {
+              setTimeout(initMobileSubmenuToggles, 100);
+            }
+          }
+        });
+      });
+      setTimeout(function() {
+        document.querySelectorAll('.mobile-menu, .nav-menu, #navMenu, nav').forEach(function(menu) {
+          observer.observe(menu, { attributes: true, attributeFilter: ['class', 'style'] });
+        });
+      }, 500);
+    })();
+    </script>
+
+    <script id="zappy-navbar-scroll-effect">
+    (function(){
+      var nb=document.querySelector('nav.navbar,.navbar:not(.zappy-catalog-menu)');
+      var cm=document.querySelector('.zappy-catalog-menu,#zappy-catalog-menu');
+      if(!nb)return;
+      var fb='rgba(15,17,21,0.85)';
+      var th=60;
+      var rs=getComputedStyle(document.documentElement);
+      var td=rs.getPropertyValue('--text-dark').trim()||'#1a1a1a';
+      var tl=rs.getPropertyValue('--text-light').trim()||'#ffffff';
+      var st=false?td:tl;
+      nb.style.transition='background 0.3s ease,backdrop-filter 0.3s ease,-webkit-backdrop-filter 0.3s ease,box-shadow 0.3s ease';
+      if(cm)cm.style.transition='background 0.3s ease,backdrop-filter 0.3s ease,-webkit-backdrop-filter 0.3s ease';
+      var neSel='a,.navbar-brand,.navbar-brand a,.dropdown-toggle,.mobile-toggle,.phone-header-btn,.mobile-hamburger-btn,.mobile-close-btn,.mobile-submenu-toggle,.nav-link';
+      var skipCls=['cart-link','login-link','nav-search-toggle','search-toggle'];
+      function sTC(c,clr){var els=c.querySelectorAll(neSel);for(var i=0;i<els.length;i++){var sk=false;for(var j=0;j<skipCls.length;j++){if(els[i].classList.contains(skipCls[j])){sk=true;break;}}if(!sk)els[i].style.setProperty('color',clr,'important');}}
+      function cTC(c){var els=c.querySelectorAll(neSel);for(var i=0;i<els.length;i++)els[i].style.removeProperty('color');}
+      function applyScrolled(){
+        nb.classList.add('scrolled');nb.style.setProperty('--frosted-text',st);
+        nb.style.setProperty('background-image','none','important');
+        nb.style.backdropFilter='blur(12px)';nb.style.webkitBackdropFilter='blur(12px)';nb.style.boxShadow='0 2px 16px rgba(0,0,0,0.12)';
+        sTC(nb,st);
+        if(window.innerWidth>768){nb.style.setProperty('background-color',fb,'important');}
+        if(cm){cm.classList.add('scrolled');cm.style.setProperty('background',fb,'important');cm.style.setProperty('backdrop-filter','blur(12px)','important');cm.style.setProperty('-webkit-backdrop-filter','blur(12px)','important');sTC(cm,st);}
+      }
+      function onS(){
+        if(window.innerWidth<=768){nb.classList.remove('scrolled');cTC(nb);if(cm){cm.classList.remove('scrolled');cTC(cm);}return;}
+        var y=window.scrollY||window.pageYOffset;
+        if(y>th){
+          nb.classList.add('scrolled');nb.style.setProperty('background-color',fb,'important');nb.style.setProperty('background-image','none','important');
+          nb.style.setProperty('--frosted-text',st);nb.style.backdropFilter='blur(12px)';nb.style.webkitBackdropFilter='blur(12px)';nb.style.boxShadow='0 2px 16px rgba(0,0,0,0.12)';
+          sTC(nb,st);
+          if(cm){cm.classList.add('scrolled');cm.style.setProperty('background',fb,'important');cm.style.setProperty('backdrop-filter','blur(12px)','important');cm.style.setProperty('-webkit-backdrop-filter','blur(12px)','important');sTC(cm,st);}
+        }else{
+          nb.classList.remove('scrolled');nb.style.setProperty('background-color','transparent','important');nb.style.removeProperty('background-image');
+          nb.style.removeProperty('--frosted-text');nb.style.backdropFilter='none';nb.style.webkitBackdropFilter='none';nb.style.boxShadow='none';
+          cTC(nb);
+          if(cm){cm.classList.remove('scrolled');cm.style.setProperty('background','transparent','important');cm.style.setProperty('backdrop-filter','none','important');cm.style.setProperty('-webkit-backdrop-filter','none','important');cTC(cm);}
+        }
+      }
+      function sLum(rv,gv,bv){rv/=255;gv/=255;bv/=255;rv=rv<=0.03928?rv/12.92:Math.pow((rv+0.055)/1.055,2.4);gv=gv<=0.03928?gv/12.92:Math.pow((gv+0.055)/1.055,2.4);bv=bv<=0.03928?bv/12.92:Math.pow((bv+0.055)/1.055,2.4);return 0.2126*rv+0.7152*gv+0.0722*bv;}
+      window.addEventListener('scroll',onS,{passive:true});
+      window.addEventListener('resize',onS,{passive:true});
+      onS();
+      var heroEl=document.querySelector('section[class*="hero"],[data-hero-type],main>section:first-child');
+      var hasDH=false;
+      if(heroEl){var hCs=getComputedStyle(heroEl);var hBI=hCs.backgroundImage;if(hBI&&hBI!=='none'){if(hBI.indexOf('url(')!==-1){var hM2=hCs.backgroundColor.match(/\d+/g);if(hM2&&hM2.length>=3){hasDH=sLum(parseInt(hM2[0]),parseInt(hM2[1]),parseInt(hM2[2]))<0.4;}else{hasDH=true;}}else if(hBI.indexOf('gradient')!==-1){var cM=hBI.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g);if(cM&&cM.length>0){var tLm=0;for(var ci=0;ci<cM.length;ci++){var pts=cM[ci].match(/\d+/g);tLm+=sLum(parseInt(pts[0]),parseInt(pts[1]),parseInt(pts[2]));}hasDH=(tLm/cM.length)<0.4;}else{hasDH=true;}}else{hasDH=true;}}else{var hM=hCs.backgroundColor.match(/\d+/g);if(hM&&hM.length>=3){hasDH=sLum(parseInt(hM[0]),parseInt(hM[1]),parseInt(hM[2]))<0.4;}}}
+      if(!hasDH){window.removeEventListener('scroll',onS);window.removeEventListener('resize',onS);applyScrolled();}
+    })();
+    </script>
+</body>
+</html>
